@@ -44,4 +44,16 @@ Implementar únicamente el registro y la consulta de artistas para el catálogo.
 
 ## Verificación de entorno
 
-La versión objetivo aprobada es Laravel 13 con PHP 8.4 y MySQL. Laravel 13 admite PHP 8.3 a 8.5.\n\nEl 26 de agosto de 2026 se intentó primero el instalador oficial de Laravel para Windows (`https://php.new/install/windows/8.4`). El diagnóstico posterior con `curl -v https://php.new/install/windows/8.4` mostró que Windows bloquea la conexión HTTPS saliente antes de negociar TLS (`Bad access`), sin variables de proxy configuradas. Los almacenes de certificados raíz de usuario y equipo contienen 513 certificados, por lo que no se desactivó TLS ni la comprobación de certificados. Tampoco están disponibles Winget, Chocolatey o Scoop.\n\nPHP 8.4, Composer, Laravel y las pruebas continúan sin poder inicializarse. Para continuar, el equipo debe habilitar la conectividad HTTPS saliente hacia el instalador oficial o proporcionar un entorno PHP 8.4 + Composer ya aprobado.
+**Estado actual (26 de agosto de 2026):**
+
+- PHP 8.4.24 instalado y operativo (vía `winget install PHP.PHP.8.4`).
+- Composer 2.10.2 operativo.
+- Laravel 13.29.0 operativo.
+- `php artisan` operativo.
+- HTTPS hacia `php.new` y `getcomposer.org` operativo.
+- El bloqueo TLS anterior hacia `windows.php.net` no afecta al entorno actual.
+- SQLite se utiliza para desarrollo y pruebas (`database/database.sqlite`).
+- MySQL permanece como base de datos objetivo del proyecto.
+- Microsoft Visual C++ 2015+ Redistributable (x64) v14.51.36247.0 instalado.
+
+**Stack aprobado:** Laravel 13, PHP 8.4, MySQL, SQLite para desarrollo/pruebas.
