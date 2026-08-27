@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 #[Fillable(['nombre', 'apellido', 'nacionalidad', 'estado', 'fecha_nacimiento', 'fecha_fallecimiento', 'biografia'])]
 #[Hidden([])]
@@ -69,5 +70,12 @@ class Artist extends Model
         $artist->save();
 
         return $artist;
+    }
+
+    public function artworks(): BelongsToMany
+    {
+        return $this->belongsToMany(Artwork::class, 'artwork_artists')
+            ->withPivot('tipo_autoria')
+            ->withTimestamps();
     }
 }
