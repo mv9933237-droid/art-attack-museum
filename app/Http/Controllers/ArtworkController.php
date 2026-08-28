@@ -109,4 +109,13 @@ class ArtworkController extends Controller
             'data' => $exhibitions,
         ]);
     }
+
+    public function status(Artwork $artwork): JsonResponse
+    {
+        return response()->json([
+            'data' => [
+                'estado_comercial' => $artwork->estado_comercial,
+            ],
+        ]);
+    }
 }

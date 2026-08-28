@@ -350,4 +350,20 @@ class ArtworkCatalogTest extends TestCase
         $this->assertCount(1, $data);
         $this->assertEquals('La Mona Lisa', $data[0]['titulo']);
     }
+
+    public function test_puede_consultar_estado_de_obra(): void
+    {
+        $artwork = Artwork::factory()->create([
+            'estado_comercial' => 'reservada',
+        ]);
+
+        $response = $this->getJson("/artworks/{$artwork->id}/status");
+
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'data' => ['estado_comercial'],
+            ]);
+
+        $this->assertEquals('reservada', $response->json('data.estado_comercial'));
+    }
 }

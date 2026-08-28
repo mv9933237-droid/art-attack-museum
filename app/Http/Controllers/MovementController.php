@@ -7,6 +7,7 @@ use App\Models\Artwork;
 use App\Models\Movement;
 use App\Services\MovementService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Validation\ValidationException;
 
 class MovementController extends Controller
 {
@@ -16,7 +17,13 @@ class MovementController extends Controller
 
     public function store(StoreMovementRequest $request): JsonResponse
     {
-        $movement = $this->movementService->create($request->validated());
+        try {
+            $movement = $this->movementService->create($request->validated());
+        } catch (\InvalidArgumentException $e) {
+            throw ValidationException::withMessages([
+                'destination_location_id' => $e->getMessage(),
+            ]);
+        }
 
         return response()->json([
             'data' => $movement->load(['artwork', 'originLocation', 'destinationLocation']),

@@ -11,11 +11,9 @@ class CustomerController extends Controller
     public function index(): JsonResponse
     {
         $customers = Customer::orderBy('apellido')
-            ->get();
+            ->paginate(15);
 
-        return response()->json([
-            'data' => $customers,
-        ]);
+        return response()->json($customers);
     }
 
     public function store(Request $request): JsonResponse
@@ -47,5 +45,15 @@ class CustomerController extends Controller
         return response()->json([
             'data' => $customer,
         ]);
+    }
+
+    public function sales(Customer $customer): JsonResponse
+    {
+        $sales = $customer->sales()
+            ->with(['saleDetails.artwork', 'payments'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
+
+        return response()->json($sales);
     }
 }

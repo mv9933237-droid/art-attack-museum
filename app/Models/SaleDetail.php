@@ -31,8 +31,7 @@ class SaleDetail extends Model
 
     public function calcularSubtotal(): void
     {
-        $subtotal = $this->precio - $this->descuento + $this->impuesto;
-        $this->update(['subtotal' => $subtotal]);
+        $this->update(['subtotal' => $this->precio]);
     }
 
     public function sale(): BelongsTo

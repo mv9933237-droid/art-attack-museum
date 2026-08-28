@@ -4,19 +4,24 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreExhibitionRequest;
 use App\Models\Exhibition;
+use App\Services\ExhibitionService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class ExhibitionController extends Controller
 {
-    public function index(): JsonResponse
+    public function __construct(
+        private readonly ExhibitionService $exhibitionService,
+    ) {}
+
+    public function index(Request $request): JsonResponse
     {
         $exhibitions = Exhibition::withCount('artworks')
             ->orderBy('start_date', 'desc')
-            ->get();
+            ->paginate($request->integer('per_page', 15));
 
-        return response()->json([
-            'data' => $exhibitions,
-        ]);
+        return response()->json($exhibitions);
     }
 
     public function store(StoreExhibitionRequest $request): JsonResponse
@@ -61,12 +66,32 @@ class ExhibitionController extends Controller
         ]);
     }
 
-    public function artworks(Exhibition $exhibition): JsonResponse
+    public function changeStatus(Request $request, Exhibition $exhibition): JsonResponse
     {
-        $artworks = $exhibition->artworks()->with(['artists', 'location'])->get();
+        $request->validate([
+            'estado' => 'required|string|in:programada,en_curso,finalizada,cancelada',
+        ]);
+
+        try {
+            $exhibition = $this->exhibitionService->changeStatus(
+                $exhibition,
+                $request->estado,
+            );
+        } catch (\InvalidArgumentException $e) {
+            throw ValidationException::withMessages([
+                'estado' => $e->getMessage(),
+            ]);
+        }
 
         return response()->json([
-            'data' => $artworks,
+            'data' => $exhibition,
         ]);
+    }
+
+    public function artworks(Exhibition $exhibition): JsonResponse
+    {
+        $artworks = $exhibition->artworks()->with(['artists', 'location'])->paginate(15);
+
+        return response()->json($artworks);
     }
 }

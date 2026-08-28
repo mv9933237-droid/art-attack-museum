@@ -318,4 +318,115 @@ class ExhibitionTest extends TestCase
 
         $response->assertStatus(404);
     }
+
+    public function test_transicion_programada_a_en_curso(): void
+    {
+        $exhibition = Exhibition::factory()->create([
+            'estado' => 'programada',
+        ]);
+
+        $response = $this->putJson("/exhibitions/{$exhibition->id}/status", [
+            'estado' => 'en_curso',
+        ]);
+
+        $response->assertStatus(200);
+
+        $this->assertDatabaseHas('exhibitions', [
+            'id' => $exhibition->id,
+            'estado' => 'en_curso',
+        ]);
+    }
+
+    public function test_transicion_programada_a_cancelada(): void
+    {
+        $exhibition = Exhibition::factory()->create([
+            'estado' => 'programada',
+        ]);
+
+        $response = $this->putJson("/exhibitions/{$exhibition->id}/status", [
+            'estado' => 'cancelada',
+        ]);
+
+        $response->assertStatus(200);
+
+        $this->assertDatabaseHas('exhibitions', [
+            'id' => $exhibition->id,
+            'estado' => 'cancelada',
+        ]);
+    }
+
+    public function test_transicion_en_curso_a_finalizada(): void
+    {
+        $exhibition = Exhibition::factory()->create([
+            'estado' => 'en_curso',
+        ]);
+
+        $response = $this->putJson("/exhibitions/{$exhibition->id}/status", [
+            'estado' => 'finalizada',
+        ]);
+
+        $response->assertStatus(200);
+
+        $this->assertDatabaseHas('exhibitions', [
+            'id' => $exhibition->id,
+            'estado' => 'finalizada',
+        ]);
+    }
+
+    public function test_transicion_en_curso_a_cancelada(): void
+    {
+        $exhibition = Exhibition::factory()->create([
+            'estado' => 'en_curso',
+        ]);
+
+        $response = $this->putJson("/exhibitions/{$exhibition->id}/status", [
+            'estado' => 'cancelada',
+        ]);
+
+        $response->assertStatus(200);
+
+        $this->assertDatabaseHas('exhibitions', [
+            'id' => $exhibition->id,
+            'estado' => 'cancelada',
+        ]);
+    }
+
+    public function test_transicion_finalizada_no_permitida(): void
+    {
+        $exhibition = Exhibition::factory()->create([
+            'estado' => 'finalizada',
+        ]);
+
+        $response = $this->putJson("/exhibitions/{$exhibition->id}/status", [
+            'estado' => 'programada',
+        ]);
+
+        $response->assertStatus(422);
+    }
+
+    public function test_transicion_cancelada_no_permitida(): void
+    {
+        $exhibition = Exhibition::factory()->create([
+            'estado' => 'cancelada',
+        ]);
+
+        $response = $this->putJson("/exhibitions/{$exhibition->id}/status", [
+            'estado' => 'en_curso',
+        ]);
+
+        $response->assertStatus(422);
+    }
+
+    public function test_transicion_programada_a_finalizada_no_permitida(): void
+    {
+        $exhibition = Exhibition::factory()->create([
+            'estado' => 'programada',
+        ]);
+
+        $response = $this->putJson("/exhibitions/{$exhibition->id}/status", [
+            'estado' => 'finalizada',
+        ]);
+
+        $response->assertStatus(422);
+    }
 }

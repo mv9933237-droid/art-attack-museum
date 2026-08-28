@@ -13,15 +13,13 @@ class ReservationController extends Controller
         private readonly ReservationService $reservationService,
     ) {}
 
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         $reservations = Reservation::with(['artwork', 'customer'])
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->paginate($request->integer('per_page', 15));
 
-        return response()->json([
-            'data' => $reservations,
-        ]);
+        return response()->json($reservations);
     }
 
     public function store(Request $request): JsonResponse

@@ -392,4 +392,150 @@ class MovementTest extends TestCase
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['responsable']);
     }
+
+    public function test_destino_lleno_rechaza_movimiento(): void
+    {
+        $origin = Location::create([
+            'nombre' => 'Sala Origen',
+            'capacidad' => 10,
+            'estado' => 'activa',
+        ]);
+
+        $destination = Location::create([
+            'nombre' => 'Sala Destino',
+            'capacidad' => 1,
+            'estado' => 'activa',
+        ]);
+
+        $artwork1 = Artwork::create([
+            'titulo' => 'Obra 1',
+            'naturaleza' => 'original',
+            'estado_comercial' => 'disponible',
+            'current_location_id' => $destination->id,
+        ]);
+
+        $artwork2 = Artwork::create([
+            'titulo' => 'Obra 2',
+            'naturaleza' => 'original',
+            'estado_comercial' => 'disponible',
+            'current_location_id' => $origin->id,
+        ]);
+
+        $response = $this->postJson('/movements', [
+            'artwork_id' => $artwork2->id,
+            'origin_location_id' => $origin->id,
+            'destination_location_id' => $destination->id,
+            'fecha' => Carbon::today()->toDateString(),
+            'motivo' => 'Traslado',
+            'responsable' => 'Juan Pérez',
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonPath('message', "La ubicación de destino '{$destination->nombre}' ha alcanzado su capacidad máxima (1).");
+    }
+
+    public function test_destino_con_capacidad_disponible_permite_movimiento(): void
+    {
+        $origin = Location::create([
+            'nombre' => 'Sala Origen',
+            'capacidad' => 10,
+            'estado' => 'activa',
+        ]);
+
+        $destination = Location::create([
+            'nombre' => 'Sala Destino',
+            'capacidad' => 2,
+            'estado' => 'activa',
+        ]);
+
+        $artwork1 = Artwork::create([
+            'titulo' => 'Obra 1',
+            'naturaleza' => 'original',
+            'estado_comercial' => 'disponible',
+            'current_location_id' => $destination->id,
+        ]);
+
+        $artwork2 = Artwork::create([
+            'titulo' => 'Obra 2',
+            'naturaleza' => 'original',
+            'estado_comercial' => 'disponible',
+            'current_location_id' => $origin->id,
+        ]);
+
+        $response = $this->postJson('/movements', [
+            'artwork_id' => $artwork2->id,
+            'origin_location_id' => $origin->id,
+            'destination_location_id' => $destination->id,
+            'fecha' => Carbon::today()->toDateString(),
+            'motivo' => 'Traslado',
+            'responsable' => 'Juan Pérez',
+        ]);
+
+        $response->assertStatus(201);
+
+        $this->assertDatabaseHas('artworks', [
+            'id' => $artwork2->id,
+            'current_location_id' => $destination->id,
+        ]);
+    }
+
+    public function test_movimiento_libera_capacidad_en_origen(): void
+    {
+        $origin = Location::create([
+            'nombre' => 'Sala Origen',
+            'capacidad' => 1,
+            'estado' => 'activa',
+        ]);
+
+        $destination = Location::create([
+            'nombre' => 'Sala Destino',
+            'capacidad' => 1,
+            'estado' => 'activa',
+        ]);
+
+        $artwork = Artwork::create([
+            'titulo' => 'Obra Test',
+            'naturaleza' => 'original',
+            'estado_comercial' => 'disponible',
+            'current_location_id' => $origin->id,
+        ]);
+
+        $this->postJson('/movements', [
+            'artwork_id' => $artwork->id,
+            'origin_location_id' => $origin->id,
+            'destination_location_id' => $destination->id,
+            'fecha' => Carbon::today()->toDateString(),
+            'motivo' => 'Traslado',
+            'responsable' => 'Juan Pérez',
+        ])->assertStatus(201);
+
+        $secondOrigin = Location::create([
+            'nombre' => 'Sala Segunda',
+            'capacidad' => 1,
+            'estado' => 'activa',
+        ]);
+
+        $artwork2 = Artwork::create([
+            'titulo' => 'Obra 2',
+            'naturaleza' => 'original',
+            'estado_comercial' => 'disponible',
+            'current_location_id' => $secondOrigin->id,
+        ]);
+
+        $response = $this->postJson('/movements', [
+            'artwork_id' => $artwork2->id,
+            'origin_location_id' => $secondOrigin->id,
+            'destination_location_id' => $origin->id,
+            'fecha' => Carbon::today()->toDateString(),
+            'motivo' => 'Devolución',
+            'responsable' => 'Juan Pérez',
+        ]);
+
+        $response->assertStatus(201);
+
+        $this->assertDatabaseHas('artworks', [
+            'id' => $artwork2->id,
+            'current_location_id' => $origin->id,
+        ]);
+    }
 }

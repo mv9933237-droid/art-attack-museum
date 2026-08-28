@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Artwork;
 use App\Models\Customer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -70,5 +71,54 @@ class CustomerTest extends TestCase
             ->assertJsonStructure([
                 'data' => ['id', 'nombre', 'apellido', 'documento'],
             ]);
+    }
+
+    public function test_puede_consultar_ventas_de_cliente(): void
+    {
+        $customer = Customer::factory()->create();
+        $artwork = Artwork::factory()->create([
+            'estado_comercial' => 'disponible',
+            'naturaleza' => 'replica',
+        ]);
+
+        $saleResponse = $this->postJson('/sales', [
+            'customer_id' => $customer->id,
+            'details' => [
+                [
+                    'artwork_id' => $artwork->id,
+                    'precio' => 1000,
+                ],
+            ],
+        ]);
+        $sale = $saleResponse->json('data');
+        $this->putJson("/sales/{$sale['id']}/confirm")->assertStatus(200);
+
+        $response = $this->getJson("/customers/{$customer->id}/sales");
+
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'data' => [
+                    '*' => ['id', 'customer_id', 'estado', 'total', 'moneda', 'sale_details'],
+                ],
+            ]);
+
+        $this->assertCount(1, $response->json('data'));
+    }
+
+    public function test_puede_consultar_ventas_de_cliente_sin_ventas(): void
+    {
+        $customer = Customer::factory()->create();
+
+        $response = $this->getJson("/customers/{$customer->id}/sales");
+
+        $response->assertStatus(200);
+        $this->assertCount(0, $response->json('data'));
+    }
+
+    public function test_cliente_inexistente_ventas_retorna_404(): void
+    {
+        $response = $this->getJson('/customers/999999/sales');
+
+        $response->assertStatus(404);
     }
 }

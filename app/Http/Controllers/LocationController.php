@@ -8,15 +8,13 @@ use Illuminate\Http\Request;
 
 class LocationController extends Controller
 {
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         $locations = Location::withCount('artworks')
             ->orderBy('nombre')
-            ->get();
+            ->paginate($request->integer('per_page', 15));
 
-        return response()->json([
-            'data' => $locations,
-        ]);
+        return response()->json($locations);
     }
 
     public function store(Request $request): JsonResponse
@@ -65,10 +63,8 @@ class LocationController extends Controller
 
     public function artworks(Location $location): JsonResponse
     {
-        $artworks = $location->artworks()->with(['artists', 'location'])->get();
+        $artworks = $location->artworks()->with(['artists', 'location'])->paginate(15);
 
-        return response()->json([
-            'data' => $artworks,
-        ]);
+        return response()->json($artworks);
     }
 }

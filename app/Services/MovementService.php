@@ -22,6 +22,12 @@ class MovementService
                 );
             }
 
+            if (! $this->hasAvailableCapacity($destinationLocation)) {
+                throw new \InvalidArgumentException(
+                    "La ubicación de destino '{$destinationLocation->nombre}' ha alcanzado su capacidad máxima ({$destinationLocation->capacidad})."
+                );
+            }
+
             $movement = Movement::create([
                 'artwork_id' => $artwork->id,
                 'origin_location_id' => $originLocation->id,
@@ -35,5 +41,12 @@ class MovementService
 
             return $movement;
         });
+    }
+
+    private function hasAvailableCapacity(Location $location): bool
+    {
+        $currentCount = Artwork::where('current_location_id', $location->id)->count();
+
+        return $currentCount < $location->capacidad;
     }
 }

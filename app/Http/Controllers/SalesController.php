@@ -6,6 +6,7 @@ use App\Http\Requests\StoreSaleRequest;
 use App\Models\Sale;
 use App\Services\SaleService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class SalesController extends Controller
 {
@@ -13,15 +14,13 @@ class SalesController extends Controller
         private readonly SaleService $saleService,
     ) {}
 
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         $sales = Sale::with(['customer', 'saleDetails.artwork'])
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->paginate($request->integer('per_page', 15));
 
-        return response()->json([
-            'data' => $sales,
-        ]);
+        return response()->json($sales);
     }
 
     public function store(StoreSaleRequest $request): JsonResponse

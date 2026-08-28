@@ -35,6 +35,7 @@ Route::post('/artworks/{artwork}/unknown-author', [ArtworkArtistController::clas
 
 Route::get('/artworks/{artwork}/movements', [MovementController::class, 'history']);
 Route::get('/artworks/{artwork}/exhibitions', [ArtworkController::class, 'exhibitions']);
+Route::get('/artworks/{artwork}/status', [ArtworkController::class, 'status']);
 Route::post('/movements', [MovementController::class, 'store']);
 
 Route::get('/locations', [LocationController::class, 'index']);
@@ -47,6 +48,7 @@ Route::get('/exhibitions', [ExhibitionController::class, 'index']);
 Route::post('/exhibitions', [ExhibitionController::class, 'store']);
 Route::get('/exhibitions/{exhibition}', [ExhibitionController::class, 'show']);
 Route::put('/exhibitions/{exhibition}', [ExhibitionController::class, 'update']);
+Route::put('/exhibitions/{exhibition}/status', [ExhibitionController::class, 'changeStatus']);
 Route::get('/exhibitions/{exhibition}/artworks', [ExhibitionController::class, 'artworks']);
 
 Route::post('/exhibitions/{exhibition}/artworks', [ExhibitionArtworkController::class, 'store']);
@@ -55,6 +57,7 @@ Route::delete('/exhibitions/{exhibition}/artworks/{artwork}', [ExhibitionArtwork
 Route::get('/customers', [CustomerController::class, 'index']);
 Route::post('/customers', [CustomerController::class, 'store']);
 Route::get('/customers/{customer}', [CustomerController::class, 'show']);
+Route::get('/customers/{customer}/sales', [CustomerController::class, 'sales']);
 
 Route::get('/reservations', [ReservationController::class, 'index']);
 Route::post('/reservations', [ReservationController::class, 'store']);
@@ -69,3 +72,5 @@ Route::put('/sales/{sale}/annul', [SalesController::class, 'annul']);
 
 Route::get('/sales/{sale}/payments', [PaymentController::class, 'index']);
 Route::post('/sales/{sale}/payments', [PaymentController::class, 'store']);
+Route::put('/payments/{payment}/verify', [PaymentController::class, 'verify']);
+Route::put('/payments/{payment}/reject', [PaymentController::class, 'reject']);
